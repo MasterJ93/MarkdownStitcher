@@ -80,10 +80,15 @@ if #available(macOS 12.0, *) {
 
         while true {
             print("""
-                Type the file path or URL of the Markdown file(s) and press Return.
-                (To stitch together the Markdown files, type "--output <output_path>".
-                To view the files you've added so far, type "--view".)
-                """)
+        Type the file path or URL of the Markdown file(s) and press Return.
+        Commands:
+        - "--output <output_path>": Stitch the files and save the output.
+        - "--view": View the files you've added so far.
+        - "--clear": Clear all added files.
+        - "--help": Show this help message.
+        - "quit": Exit the program.
+        
+        """)
 
             if let input = readLine(), !input.isEmpty {
                 if input.starts(with: "--output ") {
@@ -111,9 +116,32 @@ if #available(macOS 12.0, *) {
                     }
                     return
                 } else if input == "--view" {
-                    print("Files added so far:")
-                    filePaths.forEach { print("- \($0)") }
+                    if filePaths.isEmpty {
+                        print("No files have been added yet.\n")
+                    } else {
+                        print("Files added so far:\n")
+                        filePaths.forEach { print("- \($0)") }
+                        print("\n")
+                    }
+                } else if input == "--clear" {
+                    filePaths.removeAll()
+                    print("Cleared all added files.\n")
+                } else if input == "--help" {
+                    print("""
+                Guided Mode Help:
+                - Type the file path or URL of a Markdown file to add it to the list.
+                - "--output <output_path>": Stitch the files and save the output.
+                - "--view": View the files you've added so far.
+                - "--clear": Clear all added files.
+                - "--help": Show this help message.
+                - "quit": Exit the program.
+                
+                """)
+                } else if input == "quit" {
+                    print("Exiting the program.")
+                    exit(0)
                 } else {
+                    // Split input into multiple file paths or URLs
                     filePaths.append(contentsOf: input.split(separator: " ").map { String($0) })
                     print("Files added.")
                 }
