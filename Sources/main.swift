@@ -3,56 +3,66 @@
 
 import Foundation
 
-// Check if the user provided arguments
-let arguments = CommandLine.arguments
+// Download files from URLs
+if #available(macOS 12.0, *) {
+    // Check if the user provided arguments
+    let arguments = CommandLine.arguments
 
-if arguments.count < 2 {
-    print("""
-    Usage: markdownstitcher <file1.md> <file2.md> ... --output <output_path>
-    Example: markdownstitcher file1.md file2.md --output /path/to/output.md
+    if arguments.count < 2 {
+        print("""
+    Usage: markdownstitcher <source1> <source2> ... --output <output_path>
+    Example: markdownstitcher file1.md file2.md https://example.com/file.md --output /path/to/output.md
     """)
-    exit(1)
-}
-
-// Parse arguments
-let outputFlagIndex = arguments.firstIndex(of: "--output")
-var outputPath: String? = nil
-
-if let index = outputFlagIndex {
-    if index + 1 < arguments.count {
-        outputPath = arguments[index + 1]
-    } else {
-        print("Error: No output path specified after '--output'.")
         exit(1)
     }
-}
 
-// Collect Markdown file paths
-let markdownFiles = Array(arguments[1..<(outputFlagIndex ?? arguments.count)])
+    // Parse arguments
+    let outputFlagIndex = arguments.firstIndex(of: "--output")
+    var outputPath: String? = nil
 
-if markdownFiles.isEmpty {
-    print("Error: No Markdown files provided.")
+    if let index = outputFlagIndex {
+        if index + 1 < arguments.count {
+            outputPath = arguments[index + 1]
+        } else {
+            print("Error: No output path specified after '--output'.")
+            exit(1)
+        }
+    }
+
+    // Collect sources (local files and URLs)
+    let sources = Array(arguments[1..<(outputFlagIndex ?? arguments.count)])
+
+    if sources.isEmpty {
+        print("Error: No sources provided.")
+        exit(1)
+    }
+
+    // Separate local files and URLs
+    let (localFiles, urls) = SourceSeparator.separate(sources: sources)
+
+    let downloadedFiles = await FileDownloader.download(urls: urls)
+
+    // Combine local files and successfully downloaded files
+    let validFiles = localFiles + downloadedFiles
+
+    if validFiles.isEmpty {
+        print("Error: No valid files to process.")
+        exit(1)
+    }
+
+    print("Valid files:")
+    validFiles.forEach { print("- \($0)") }
+
+    // Combine content
+    let combinedContent = MarkdownCombiner.combine(filePaths: validFiles)
+
+    // Use default output path if none is specified
+    let finalOutputPath = outputPath ?? FileManager.default.currentDirectoryPath + "/stitched_output.md"
+
+    // Write output
+    let resultPath = OutputWriter.write(content: combinedContent, to: finalOutputPath)
+    print("Output written to \(resultPath)")
+} else {
+    print("This feature isn't supported in macOS 11 or earlier.")
     exit(1)
 }
-
-// Validate files
-let (validFiles, invalidFiles) = FileValidator.validate(filePaths: markdownFiles)
-
-if !invalidFiles.isEmpty {
-    print("The following files do not exist or cannot be accessed:")
-    invalidFiles.forEach { print("- \($0)") }
-    exit(1)
-}
-
-print("Valid Markdown files:")
-validFiles.forEach { print("- \($0)") }
-
-// Combine content
-let combinedContent = MarkdownCombiner.combine(filePaths: validFiles)
-
-// Use default output path if none is specified
-let finalOutputPath = outputPath ?? FileManager.default.currentDirectoryPath + "/stitched_output.md"
-
-// Write output
-let resultPath = OutputWriter.write(content: combinedContent, to: finalOutputPath)
-print("Output written to \(resultPath)")
