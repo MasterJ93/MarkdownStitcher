@@ -21,9 +21,9 @@ if #available(macOS 12.0, *) {
 
     if arguments.count < 2 {
         print("""
-    Usage: markdownstitcher <source1> <source2> ... --output <output_path>
-    Example: markdownstitcher file1.md file2.md https://example.com/file.md --output /path/to/output.md
-    """)
+            Usage: markdownstitcher <source1> <source2> ... --output <output_path>
+            Example: markdownstitcher file1.md file2.md https://example.com/file.md --output /path/to/output.md
+            """)
         await runGuidedMode()
         exit(0)
     }
@@ -80,10 +80,10 @@ if #available(macOS 12.0, *) {
 
         while true {
             print("""
-        Type the file path or URL of the Markdown file(s) and press Return.
-        (To stitch together the Markdown files, type "--output <output_path>".
-        To view the files you've added so far, type "--view".)
-        """)
+                Type the file path or URL of the Markdown file(s) and press Return.
+                (To stitch together the Markdown files, type "--output <output_path>".
+                To view the files you've added so far, type "--view".)
+                """)
 
             if let input = readLine(), !input.isEmpty {
                 if input.starts(with: "--output ") {
