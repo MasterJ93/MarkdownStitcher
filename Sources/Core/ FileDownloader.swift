@@ -1,5 +1,5 @@
 //
-//   FileDownloader.swift
+//  FileDownloader.swift
 //  MarkdownStitcher
 //
 //  Created by Christopher Jr Riley on 2024-12-03.
@@ -19,9 +19,9 @@ public struct FileDownloader {
                 let destinationPath = try await downloadFile(from: url)
                 downloadedFiles.append(destinationPath)
 
-                print("Download completed: \(destinationPath)")
+                print("Download completed: \(destinationPath)\n")
             } catch {
-                print("Failed to download \(url.absoluteString): \(error.localizedDescription)")
+                print("Failed to download \(url.absoluteString): \(error.localizedDescription)\n")
             }
         }
 
@@ -35,12 +35,15 @@ public struct FileDownloader {
             throw URLError(.badServerResponse)
         }
 
+        // Generate a unique file name for each download
         let fileName = url.lastPathComponent.isEmpty ? "downloaded.md" : url.lastPathComponent
-        let destinationPath = FileManager.default.temporaryDirectory.appendingPathComponent(fileName).path
+        let uniqueFileName = UUID().uuidString + "-" + fileName
+        let destinationPath = FileManager.default.temporaryDirectory.appendingPathComponent(uniqueFileName).path
 
         let fileSize = httpResponse.expectedContentLength
         print("File size: \(fileSize / 1024) KB")
 
+        // Move the downloaded file to the unique destination path
         try FileManager.default.moveItem(atPath: tempURL.path, toPath: destinationPath)
 
         return destinationPath
