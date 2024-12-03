@@ -54,13 +54,13 @@ if #available(macOS 12.0, *) {
     validFiles.forEach { print("- \($0)") }
 
     // Combine content
-    let combinedContent = MarkdownCombiner.combine(filePaths: validFiles)
+    let combinedContent = await MarkdownCombiner.combine(filePaths: validFiles)
 
     // Use default output path if none is specified
     let finalOutputPath = outputPath ?? FileManager.default.currentDirectoryPath + "/stitched_output.md"
 
     // Write output
-    let resultPath = OutputWriter.write(content: combinedContent, to: finalOutputPath)
+    let resultPath = try await OutputWriter.write(content: combinedContent, to: finalOutputPath)
     print("Output written to \(resultPath)")
 } else {
     print("This feature isn't supported in macOS 11 or earlier.")

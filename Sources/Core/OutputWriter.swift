@@ -8,21 +8,18 @@
 import Foundation
 
 public struct OutputWriter {
-    public static func write(content: String, to outputPath: String) -> String {
-        // Validate that the directory for the output file exists
+    public static func write(content: String, to outputPath: String) async throws -> String {
         let directory = (outputPath as NSString).deletingLastPathComponent
-        if !FileManager.default.fileExists(atPath: directory) {
-            print("Error: The directory for the output path does not exist: \(directory)")
-            exit(1)
+        guard FileManager.default.fileExists(atPath: directory) else {
+            throw NSError(
+                domain: "com.markdownstitcher",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Directory does not exist: \(directory)"]
+            )
         }
 
-        // Attempt to write the file
-        do {
-            try content.write(toFile: outputPath, atomically: true, encoding: .utf8)
-            return outputPath
-        } catch {
-            print("Failed to write output file to \(outputPath): \(error)")
-            exit(1)
-        }
+        // Write the content to the file
+        try content.write(toFile: outputPath, atomically: true, encoding: .utf8)
+        return outputPath
     }
 }
