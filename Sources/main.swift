@@ -122,6 +122,6 @@ if #available(macOS 12.0, *) {
     }
 
 } else {
-    print("This feature isn't supported in macOS 11 or earlier.")
+    print("This program isn't supported in macOS 11 or earlier.")
     exit(1)
 }
