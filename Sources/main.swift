@@ -52,7 +52,22 @@ if #available(macOS 12.0, *) {
     // Separate local files and URLs
     let (localFiles, urls) = SourceSeparator.separate(sources: sources)
 
+    // Download files and defer cleanup
     let downloadedFiles = await FileDownloader.download(urls: urls)
+
+    defer {
+        for file in downloadedFiles {
+            let tempDirectory = FileManager.default.temporaryDirectory.path
+            if file.starts(with: tempDirectory) {
+                do {
+                    try FileManager.default.removeItem(atPath: file)
+                    print("Deleted temporary file: \(file)")
+                } catch {
+                    print("Failed to delete temporary file: \(file), error: \(error)")
+                }
+            }
+        }
+    }
 
     // Combine local files and successfully downloaded files
     let validFiles = localFiles + downloadedFiles
@@ -75,6 +90,7 @@ if #available(macOS 12.0, *) {
     let resultPath = try await OutputWriter.write(content: combinedContent, to: finalOutputPath)
     print("Output written to \(resultPath)")
 
+    // Guided mode function
     func runGuidedMode() async {
         var filePaths: [String] = []
 
@@ -97,6 +113,21 @@ if #available(macOS 12.0, *) {
 
                     let (localFiles, urls) = SourceSeparator.separate(sources: filePaths)
                     let downloadedFiles = await FileDownloader.download(urls: urls)
+
+                    defer {
+                        for file in downloadedFiles {
+                            let tempDirectory = FileManager.default.temporaryDirectory.path
+                            if file.starts(with: tempDirectory) {
+                                do {
+                                    try FileManager.default.removeItem(atPath: file)
+                                    print("Deleted temporary file: \(file)")
+                                } catch {
+                                    print("Failed to delete temporary file: \(file), error: \(error)")
+                                }
+                            }
+                        }
+                    }
+
                     let validFiles = localFiles + downloadedFiles
 
                     if validFiles.isEmpty {
